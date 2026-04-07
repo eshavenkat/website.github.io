@@ -1,43 +1,1027 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Esha Venkatanarayan — Cornell CS, full-stack builder, ML &amp; music tech. Portfolio, projects, and contact.">
+    <title>Esha Venkatanarayan — Software Engineer &amp; Builder</title>
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400&family=Syncopate:wght@400;700&family=Space+Mono&display=swap" rel="stylesheet">
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+    <style>
+        :root {
+            --bg-ambient: #0a0a0a;
+            --surface-dark: #121212;
+            --accent-gold: #a89f91;
+            --text-main: #d9d4cd;
+            --text-muted: rgba(217, 212, 205, 0.4);
+            --border-hairline: rgba(168, 159, 145, 0.15);
+            --border-dark: rgba(0, 0, 0, 0.8);
+
+            --font-sans: 'Montserrat', sans-serif;
+            --font-script: 'Syncopate', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+
+            --pad-edge: clamp(1.5rem, 4vw, 4rem);
+            --nav-height: 80px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-ambient);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            cursor: default;
+        }
+
+        ::selection {
+            background: var(--accent-gold);
+            color: #000;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.03;
+            mix-blend-mode: overlay;
+            background: url("data:image/svg+xml;utf8,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        .layout {
+            position: relative;
+            z-index: 2;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--nav-height);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 var(--pad-edge);
+            z-index: 100;
+            mix-blend-mode: normal;
+        }
+
+        .logo-lockup {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-mark {
+            width: 24px;
+            height: 24px;
+            position: relative;
+            border: 1px solid var(--accent-gold);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-mark::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background: var(--accent-gold);
+            transform: translateY(-50%);
+        }
+
+        .logo-mark::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 1px;
+            height: 100%;
+            background: var(--accent-gold);
+            transform: translateX(-50%);
+        }
+
+        .logo-mark .tick {
+            display: none;
+        }
+
+        .logo-text {
+            font-size: 0.65rem;
+            font-weight: 400;
+            letter-spacing: 0.2em;
+            line-height: 1.2;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            font-family: var(--font-mono);
+        }
+
+        nav.sys-nav {
+            display: flex;
+            gap: 2rem;
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        nav.sys-nav a {
+            color: var(--text-main);
+            text-decoration: none;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        nav.sys-nav a:hover {
+            opacity: 1;
+        }
+
+        nav.sys-nav a::before {
+            content: "[";
+            opacity: 0;
+            transform: translateX(5px);
+            transition: all 0.3s ease;
+        }
+
+        nav.sys-nav a::after {
+            content: "]";
+            opacity: 0;
+            transform: translateX(-5px);
+            transition: all 0.3s ease;
+        }
+
+        nav.sys-nav a:hover::before,
+        nav.sys-nav a:hover::after {
+            opacity: 1;
+            transform: translateX(0);
+            color: var(--accent-gold);
+        }
+
+        .hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: calc(var(--nav-height) + 4rem) var(--pad-edge) 4rem var(--pad-edge);
+            position: relative;
+        }
+
+        .hero-meta {
+            margin-bottom: 2rem;
+            font-size: clamp(0.7rem, 1vw, 0.9rem);
+            font-weight: 400;
+            letter-spacing: 0.2em;
+            line-height: 1.6;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            font-family: var(--font-mono);
+        }
+
+        .hero-meta span {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .hero-title {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .title-script {
+            font-family: var(--font-script);
+            font-size: clamp(0.8rem, 2vw, 1.5rem);
+            font-weight: 400;
+            line-height: 1;
+            color: var(--text-muted);
+            position: relative;
+            z-index: 2;
+            text-transform: uppercase;
+            letter-spacing: 0.8em;
+            padding-left: 0.8em;
+            margin-bottom: 0.5rem;
+            transform: none !important;
+        }
+
+        .title-sans {
+            font-family: var(--font-sans);
+            font-size: clamp(3.5rem, 11vw, 10rem);
+            font-weight: 100;
+            letter-spacing: 0.15em;
+            line-height: 1;
+            color: var(--text-main);
+            z-index: 1;
+            text-transform: uppercase;
+            transform: none !important;
+        }
+
+        /* Long last name: scales down so it fits typical viewports */
+        .title-sans.title-lastname {
+            font-size: clamp(1.35rem, 4.2vw, 4.25rem);
+            letter-spacing: 0.06em;
+            line-height: 1.05;
+            max-width: 100%;
+            word-break: break-word;
+            hyphens: auto;
+        }
+
+        .ui-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+        }
+
+        .ui-grid-line-v {
+            border-left: 1px solid var(--accent-gold);
+            opacity: 0.1;
+            height: 100%;
+        }
+
+        .ui-grid-line-h {
+            border-top: 1px solid var(--accent-gold);
+            opacity: 0.1;
+            width: 100%;
+            grid-column: 1 / -1;
+        }
+
+        .corner-marker {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border: 1px solid var(--accent-gold);
+            opacity: 0.3;
+        }
+
+        .cm-tl {
+            top: var(--pad-edge);
+            left: var(--pad-edge);
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .cm-br {
+            bottom: var(--pad-edge);
+            right: var(--pad-edge);
+            border-left: none;
+            border-top: none;
+        }
+
+        .tech-data {
+            position: absolute;
+            bottom: var(--pad-edge);
+            right: var(--pad-edge);
+            font-family: var(--font-mono);
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-align: right;
+            line-height: 1.6;
+            letter-spacing: 0.1em;
+        }
+
+        .tech-data strong {
+            color: var(--accent-gold);
+            font-weight: 400;
+        }
+
+        .content-section {
+            background: linear-gradient(to bottom, transparent, var(--surface-dark) 15%, #080808 100%);
+            padding: 8rem var(--pad-edge);
+            position: relative;
+            z-index: 3;
+            border-top: 1px solid var(--border-hairline);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 4rem;
+            border-bottom: 1px solid var(--border-hairline);
+            padding-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-gold);
+            font-family: var(--font-mono);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .section-title::before {
+            content: "";
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: transparent;
+            border: 1px solid var(--accent-gold);
+            border-radius: 50%;
+        }
+
+        .index-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .index-item {
+            display: grid;
+            grid-template-columns: 1fr 3fr 2fr 1fr;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-hairline);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            text-decoration: none;
+            color: var(--text-main);
+            position: relative;
+        }
+
+        .index-item::before {
+            content: "";
+            position: absolute;
+            left: -1rem;
+            top: 0;
+            width: 1px;
+            height: 100%;
+            background: var(--accent-gold);
+            transform: scaleY(0);
+            transform-origin: center;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .index-item:hover {
+            background: rgba(168, 159, 145, 0.02);
+            padding-left: 1rem;
+        }
+
+        .index-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .col-id {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            color: var(--accent-gold);
+        }
+
+        .col-title {
+            font-size: 1.5rem;
+            font-weight: 300;
+            letter-spacing: 0.02em;
+        }
+
+        .col-tags {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .col-year {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            text-align: right;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 1024px) {
+            .index-item {
+                grid-template-columns: 1fr 4fr 1fr;
+            }
+
+            .col-tags {
+                display: none;
+            }
+        }
+
+        details.work-card {
+            border-bottom: 1px solid var(--border-hairline);
+            transition: background 0.3s ease;
+        }
+
+        details.work-card:hover {
+            background: rgba(168, 159, 145, 0.02);
+        }
+
+        summary.work-summary {
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1.35rem 0;
+            font-family: var(--font-sans);
+            font-size: clamp(1.1rem, 2.4vw, 1.45rem);
+            font-weight: 300;
+            letter-spacing: 0.03em;
+            color: var(--text-main);
+            user-select: none;
+        }
+
+        summary.work-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary.work-summary::marker {
+            display: none;
+        }
+
+        .work-summary-title {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .work-chevron {
+            flex-shrink: 0;
+            width: 2rem;
+            height: 2rem;
+            display: grid;
+            place-items: center;
+            border: 1px solid var(--border-hairline);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--accent-gold);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+        }
+
+        details.work-card[open] .work-chevron {
+            transform: rotate(45deg);
+            border-color: rgba(168, 159, 145, 0.35);
+        }
+
+        summary.work-summary:hover .work-chevron {
+            border-color: var(--accent-gold);
+        }
+
+        details.work-card[open] summary.work-summary {
+            color: var(--accent-gold);
+        }
+
+        .work-detail {
+            margin-top: 0;
+            padding: 0 0 1.75rem 0;
+            max-width: 72ch;
+            font-size: clamp(0.85rem, 1.5vw, 0.95rem);
+            font-weight: 300;
+            line-height: 1.75;
+            color: var(--text-muted);
+        }
+
+        .work-detail p + p {
+            margin-top: 0.85rem;
+        }
+
+        .work-detail strong {
+            color: var(--text-main);
+            font-weight: 400;
+        }
+
+        .tag-inline {
+            display: inline-block;
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            margin-top: 1rem;
+        }
+
+        .about-layout {
+            display: grid;
+            grid-template-columns: minmax(200px, 300px) 1fr;
+            gap: clamp(2rem, 5vw, 3.5rem);
+            align-items: start;
+            max-width: min(56rem, 100%);
+        }
+
+        .about-photo-wrap {
+            position: relative;
+        }
+
+        .about-photo {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+            aspect-ratio: 3 / 4;
+            border: 1px solid var(--border-hairline);
+            filter: contrast(1.02);
+        }
+
+        .about-prose {
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        @media (max-width: 768px) {
+            .about-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .about-photo-wrap {
+                max-width: 280px;
+                margin: 0 auto;
+            }
+        }
+
+        .about-lede {
+            font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+            font-weight: 300;
+            line-height: 1.65;
+            color: var(--text-main);
+            margin-bottom: 1.75rem;
+        }
+
+        .about-body {
+            font-size: clamp(0.9rem, 1.6vw, 1rem);
+            font-weight: 300;
+            line-height: 1.8;
+            color: var(--text-muted);
+        }
+
+        .about-body p + p {
+            margin-top: 1.1rem;
+        }
+
+        .skills-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 0.75rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-hairline);
+        }
+
+        .skill-pill {
+            font-family: var(--font-mono);
+            font-size: 0.62rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.45rem 0.75rem;
+            border: 1px solid var(--border-hairline);
+            color: var(--text-muted);
+            transition: border-color 0.3s ease, color 0.3s ease;
+        }
+
+        .skill-pill:hover {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .contact-block {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        .contact-block a {
+            color: var(--text-main);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: color 0.25s ease, border-color 0.25s ease;
+        }
+
+        .contact-block a:hover {
+            color: var(--accent-gold);
+            border-bottom-color: var(--accent-gold);
+        }
+
+        .contact-label {
+            display: block;
+            color: var(--accent-gold);
+            margin-bottom: 0.35rem;
+            font-size: 0.62rem;
+        }
+
+        @media (max-width: 768px) {
+            .index-item {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+            }
+
+            .col-id {
+                display: none;
+            }
+
+            .col-title {
+                font-size: 1.2rem;
+            }
+
+            nav.sys-nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <div class="noise"></div>
+
+    <div class="ui-grid">
+        <div class="ui-grid-line-v"></div>
+        <div class="ui-grid-line-v"></div>
+        <div class="ui-grid-line-v" style="grid-column: 7;"></div>
+        <div class="ui-grid-line-v" style="grid-column: 11;"></div>
+        <div class="ui-grid-line-h" style="grid-row: 2;"></div>
+        <div class="ui-grid-line-h" style="grid-row: 5;"></div>
+    </div>
+
+    <div class="layout">
+        <div class="corner-marker cm-tl"></div>
+        <div class="corner-marker cm-br"></div>
+
+        <header>
+            <div class="logo-lockup">
+                <div class="logo-mark"><div class="tick"></div></div>
+                <div class="logo-text">esha<br>portfolio</div>
+            </div>
+            <nav class="sys-nav">
+                <a href="#work">Work</a>
+                <a href="#profile">About</a>
+                <a href="#contact">Contact</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div class="hero-meta">
+                    CORNELL UNIVERSITY · B.S. COMPUTER SCIENCE<br>
+                    <span>Full-Stack · Machine Learning · Systems &amp; Interfaces</span>
+                </div>
+
+                <h1 class="hero-title">
+                    <span class="title-script">Esha</span>
+                    <span class="title-sans title-lastname">Venkatanarayan</span>
+                </h1>
+
+                <div class="tech-data">
+                    ROLE <strong>BUILDER / RESEARCHER</strong><br>
+                    DEG // <strong>CS + BUSINESS MINOR</strong><br>
+                    LOC // <strong>42.45° N, 76.47° W · ITHACA</strong>
+                </div>
+            </section>
+
+            <section class="content-section" id="work">
+                <div class="section-header">
+                    <div class="section-title">Projects &amp; Experience [ 01 / 07 ]</div>
+                    <div class="tech-data" style="position: static; text-align: right;">STATUS: <strong>ACTIVE</strong></div>
+                </div>
+
+                <div class="index-list">
+                    <details class="work-card">
+                        <summary class="work-summary">
+                            <span class="work-summary-title">Amazon Software Development (Incoming)</span>
+                            <span class="work-chevron" aria-hidden="true">+</span>
+                        </summary>
+                        <div class="work-detail">
+                            <p><strong>Incoming role.</strong> I am joining <strong>Amazon</strong> on the <strong>security team</strong> as a software developer, building and hardening systems that protect customers, services, and infrastructure at scale.</p>
+                            <p>I am excited to work on real-world security engineering problems: secure design, defensive tooling, and the kind of cross-team collaboration that keeps large systems trustworthy under pressure. More detail on projects and impact will land here after I start.</p>
+                            <span class="tag-inline">Security · Software development · Incoming</span>
+                        </div>
+                    </details>
+
+                    <details class="work-card">
+                        <summary class="work-summary">
+                            <span class="work-summary-title">SoundStudio</span>
+                            <span class="work-chevron" aria-hidden="true">+</span>
+                        </summary>
+                        <div class="work-detail">
+                            <p><strong>Music analytics platform</strong> — A full-stack web app that ingests audio, extracts musical features with Librosa, and surfaces them through responsive visualizations. I built the pipeline end-to-end: from file handling and feature engineering to an interface that makes complex audio data legible at a glance.</p>
+                            <p>On the ML side, I use scikit-learn to cluster tracks by rhythmic, harmonic, and spectral fingerprints—so listeners can see patterns in their libraries and get production-minded recommendations. It is where my love for <em>music</em> and <em>data</em> finally share a waveform.</p>
+                            <span class="tag-inline">Python · Flask · Librosa · Pandas · NumPy · Scikit-learn · Plotly · HTML/CSS · JavaScript</span>
+                        </div>
+                    </details>
+
+                    <details class="work-card">
+                        <summary class="work-summary">
+                            <span class="work-summary-title">StudySmart</span>
+                            <span class="work-chevron" aria-hidden="true">+</span>
+                        </summary>
+                        <div class="work-detail">
+                            <p><strong>Academic schedule optimizer</strong> — A productivity platform built for real Cornell schedules: adaptive priority queues, spaced repetition hooks, and ML that personalizes study plans so time is not just allocated—it is <em>spent well</em>.</p>
+                            <p>I integrated the Google Calendar API for live scheduling, paired with predictive analytics to suggest when and what to study. Designed for 100+ students, it is my answer to the question: <strong>can software respect how humans actually learn?</strong></p>
+                            <span class="tag-inline">Python · Django · pandas · scikit-learn · Google Calendar API · JavaScript</span>
+                        </div>
+                    </details>
+
+                    <details class="work-card">
+                        <summary class="work-summary">
+                            <span class="work-summary-title">Saven Technologies</span>
+                            <span class="work-chevron" aria-hidden="true">+</span>
+                        </summary>
+                        <div class="work-detail">
+                            <p><strong>Software Engineering Intern</strong> — I developed features for a stock trading web application in Java, with a deliberate focus on UI/UX and iterative feedback from stakeholders. The goal was not only faster workflows, but clearer ones—reducing cognitive load when money and time are both on the line.</p>
+                            <p>I collaborated across functions to design, test, and ship on schedule, learning how product sense and engineering discipline meet in a live financial product.</p>
+                            <span class="tag-inline">Java · Web · Cross-functional delivery</span>
+                        </div>
+                    </details>
+
+                    <details class="work-card">
+                        <summary class="work-summary">
+                            <span class="work-summary-title">Poof Autonomous Pothole Robot</span>
+                            <span class="work-chevron" aria-hidden="true">+</span>
+                        </summary>
+                        <div class="work-detail">
+                            <p><strong>Creator &amp; team lead</strong> — An autonomous system for pothole detection and automated asphalt dispensing: ultrasonic sensing, servo control, and mechanical design in SolidWorks, integrated on the VEX framework.</p>
+                            <p>I owned mechanical-electrical bring-up across iterations—tightening durability, improving sensing reliability, and chasing the kind of field-ready performance that only comes from building, breaking, and rebuilding hardware in the loop.</p>
+                            <span class="tag-inline">Python · Arduino · SolidWorks · VEX · Sensors · Servos</span>
+                        </div>
+                    </details>
+
+                    <details class="work-card">
+                        <summary class="work-summary">
+                            <span class="work-summary-title">Transit &amp; COVID-19 Research</span>
+                            <span class="work-chevron" aria-hidden="true">+</span>
+                        </summary>
+                        <div class="work-detail">
+                            <p><strong>Research — NYC public transportation</strong> — I modeled how the COVID-19 pandemic reshaped bus and train ridership, using linear regression in Python to relate demographic variables and neighborhood income to transit usage trends.</p>
+                            <p>The work lived in charts, dashboards, and heatmaps—turning messy urban data into narratives about who could stay home, who had to ride, and how a city’s pulse changed overnight. Science, for me, is as much about communication as coefficients.</p>
+                            <span class="tag-inline">GeoPandas · Matplotlib · GitHub · Regression · Visualization</span>
+                        </div>
+                    </details>
+
+                    <details class="work-card">
+                        <summary class="work-summary">
+                            <span class="work-summary-title">VEX Robotics &amp; RoboCup Junior</span>
+                            <span class="work-chevron" aria-hidden="true">+</span>
+                        </summary>
+                        <div class="work-detail">
+                            <p><strong>Founder, captain &amp; mechanical lead</strong> — I led the Robo Warriors, an all-girls robotics team, to <strong>2nd place internationally</strong> at RoboCup Junior and <strong>1st nationally</strong> at VEX—blending mechanical design, Python on the robot, and competitive strategy under pressure.</p>
+                            <p>Off the field, I managed a $1,000 annual budget and resource allocation—because great robots are also great logistics problems. This is where I learned that leadership is part engineering, part storytelling, and part showing up when the match starts.</p>
+                            <span class="tag-inline">Python · Robot design · Strategy · Budget · Team leadership</span>
+                        </div>
+                    </details>
+                </div>
+            </section>
+
+            <section class="content-section" id="profile">
+                <div class="section-header">
+                    <div class="section-title">About [ manifesto ]</div>
+                    <div class="tech-data" style="position: static; text-align: right;">PRONOUNS: <strong>SHE/HER</strong></div>
+                </div>
+                <div class="about-layout">
+                    <div class="about-photo-wrap">
+                        <img src="images/profile.png" alt="Portrait of Esha Venkatanarayan" class="about-photo" width="600" height="800" loading="lazy">
+                    </div>
+                    <div class="about-prose">
+                    <p class="about-lede">I build software the way I write music: looping, listening, and adjusting until the signal cuts through the noise. Cornell CS trained my algorithms; robotics and competition trained my nerve; mentorship reminds me that code is never written in a vacuum.</p>
+                    <div class="about-body">
+                        <p>I am drawn to the overlap of <strong>machine learning</strong>, <strong>thoughtful interfaces</strong>, and <strong>systems that help real people move through their day</strong>, whether that is a student opening StudySmart, a listener exploring SoundStudio, or a city rider traced in a transit dataset.</p>
+                        <p>Teaching Assistant at Young Engineers Corp., workshops with Cornell Society of Women Engineers, and case work with the South Asian Business Association keep me grounded in communication: the best technical work is useless if nobody can feel it.</p>
+                        <p>When I am not in the terminal, I am usually behind an instrument, producing, songwriting, piano, guitar, violin, ukulele, or in the kitchen improvising recipes the same way I refactor code. Soccer and travel keep me honest about distance, pace, and perspective.</p>
+                    </div>
+                    <div class="skills-row" aria-label="Technical skills">
+                        <span class="skill-pill">Python</span>
+                        <span class="skill-pill">Java</span>
+                        <span class="skill-pill">JavaScript</span>
+                        <span class="skill-pill">AWS Cloud Practitioner</span>
+                        <span class="skill-pill">HTML/CSS</span>
+                        <span class="skill-pill">SQL</span>
+                        <span class="skill-pill">ML &amp; Pandas</span>
+                        <span class="skill-pill">OCaml</span>
+                        <span class="skill-pill">CAD &amp; Robotics</span>
+                        <span class="skill-pill">Data Structures &amp; Algorithms</span>
+                    </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section" id="contact">
+                <div class="section-header">
+                    <div class="section-title">Contact [ open channel ]</div>
+                    <div class="tech-data" style="position: static; text-align: right;">RESPONSE: <strong>&lt; 48H</strong></div>
+                </div>
+                <div class="contact-grid">
+                    <div class="contact-block">
+                        <span class="contact-label">Email</span>
+                        <a href="mailto:ev259@cornell.edu">ev259@cornell.edu</a>
+                    </div>
+                    <div class="contact-block">
+                        <span class="contact-label">Phone</span>
+                        <a href="tel:+17329861558">(732) 986-1558</a>
+                    </div>
+                    <div class="contact-block">
+                        <span class="contact-label">Location</span>
+                        Cornell University · Ithaca, NY<br>
+                        Home: Edison, NJ
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const vertexShader = `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `;
+
+        const fragmentShader = `
+            uniform float uTime;
+            uniform vec2 uResolution;
+            varying vec2 vUv;
+
+            vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
+            float snoise(vec2 v){
+                const vec4 C = vec4(0.211324865405187, 0.366025403784439,
+                        -0.577350269189626, 0.024390243902439);
+                vec2 i  = floor(v + dot(v, C.yy) );
+                vec2 x0 = v -   i + dot(i, C.xx);
+                vec2 i1;
+                i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+                vec4 x12 = x0.xyxy + C.xxzz;
+                x12.xy -= i1;
+                i = mod(i, 289.0);
+                vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 ))
+                + i.x + vec3(0.0, i1.x, 1.0 ));
+                vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy),
+                    dot(x12.zw,x12.zw)), 0.0);
+                m = m*m;
+                m = m*m;
+                vec3 x = 2.0 * fract(p * C.www) - 1.0;
+                vec3 h = abs(x) - 0.5;
+                vec3 ox = floor(x + 0.5);
+                vec3 a0 = x - ox;
+                m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+                vec3 g;
+                g.x  = a0.x  * x0.x  + h.x  * x0.y;
+                g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+                return 130.0 * dot(m, g);
+            }
+
+            float fbm(vec2 x) {
+                float v = 0.0;
+                float a = 0.5;
+                vec2 shift = vec2(100.0);
+                mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.50));
+                for (int i = 0; i < 4; ++i) {
+                    v += a * snoise(x);
+                    x = rot * x * 2.0 + shift;
+                    a *= 0.5;
+                }
+                return v;
+            }
+
+            void main() {
+                vec2 st = gl_FragCoord.xy/uResolution.xy;
+                st.x *= uResolution.x/uResolution.y;
+
+                float t = uTime * 0.1;
+                vec2 p = st * 1.5;
+                float h = fbm(p + fbm(p + t*0.2));
+
+                float eps = 0.02;
+                float hx = fbm(p + vec2(eps, 0.0) + fbm(p + vec2(eps, 0.0) + t*0.2));
+                float hy = fbm(p + vec2(0.0, eps) + fbm(p + vec2(0.0, eps) + t*0.2));
+                vec3 normal = normalize(vec3(hx - h, hy - h, eps * 5.0));
+
+                vec3 lightDir = normalize(vec3(0.8, 0.8, 1.0));
+                float diffuse = max(dot(normal, lightDir), 0.0);
+
+                vec3 shadow = vec3(0.02, 0.02, 0.02);
+                vec3 mid = vec3(0.07, 0.065, 0.06);
+                vec3 highlight = vec3(0.12, 0.11, 0.10);
+
+                vec3 color = mix(shadow, mid, smoothstep(0.0, 0.5, diffuse));
+                color = mix(color, highlight, smoothstep(0.5, 1.0, diffuse));
+
+                float grain = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898,78.233))) * 43758.5453);
+                color += (grain - 0.5) * 0.025;
+
+                vec2 uv = gl_FragCoord.xy / uResolution.xy;
+                uv *= 1.0 - uv.yx;
+                float vig = uv.x*uv.y * 15.0;
+                vig = pow(vig, 0.2);
+                color *= vig;
+
+                gl_FragColor = vec4(color, 1.0);
+            }
+        `;
+
+        const container = document.getElementById("canvas-container");
+        const scene = new THREE.Scene();
+        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        container.appendChild(renderer.domElement);
+
+        const geometry = new THREE.PlaneGeometry(2, 2);
+        const uniforms = {
+            uTime: { value: 0 },
+            uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+        };
+
+        const material = new THREE.ShaderMaterial({
+            vertexShader,
+            fragmentShader,
+            uniforms
+        });
+
+        const mesh = new THREE.Mesh(geometry, material);
+        scene.add(mesh);
+
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            uniforms.uTime.value = clock.getElapsedTime();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener("resize", () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            renderer.setSize(width, height);
+            uniforms.uResolution.value.set(width, height);
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+            animate();
+
+            const titleScript = document.querySelector(".title-script");
+            const titleSans = document.querySelector(".title-sans");
+            const meta = document.querySelector(".hero-meta");
+
+            titleScript.style.opacity = "0";
+            titleScript.style.transform = "translateX(-2vw) translateY(5vw) rotate(-2deg)";
+            titleScript.style.transition = "all 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s";
+
+            titleSans.style.opacity = "0";
+            titleSans.style.transform = "translateY(3vw)";
+            titleSans.style.transition = "all 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s";
+
+            meta.style.opacity = "0";
+            meta.style.transition = "opacity 2s ease 1s";
+
+            setTimeout(() => {
+                titleScript.style.opacity = "1";
+                titleScript.style.transform = "translateX(-2vw) translateY(2vw) rotate(-2deg)";
+                titleSans.style.opacity = "1";
+                titleSans.style.transform = "translateY(0)";
+                meta.style.opacity = "1";
+            }, 100);
+        });
+    </script>
+</body>
 </html>
